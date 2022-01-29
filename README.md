@@ -2,6 +2,10 @@
 
 An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses.
 
+![The Adafruit SCD-41 CO2 sensor graphed in Grafana](scd-41-co2-temperature-humidity.png)
+
+See also: [Prometheus/Grafana Docker containers for Raspberry Pi](https://github.com/sighmon/prometheus-grafana-raspberry-pi)
+
 ## Setup
 
 **WiFi**:
@@ -40,6 +44,10 @@ ambient_humidity 55.85
 # TYPE co2 gauge
 co2 627
 ```
+
+My ESP32 Thing with the SCD-41 CO2 sensor running off of two recycled 18650 laptop batteries.
+
+![My ESP32 Thing with the SCD-41 CO2 sensor running off of two recycled 18650 laptop batteries](scd4x-esp32-thing.jpg)
 
 ## Thanks
 
