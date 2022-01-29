@@ -4,7 +4,10 @@ An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafrui
 
 ![The Adafruit SCD-41 CO2 sensor graphed in Grafana](scd-41-co2-temperature-humidity.png)
 
-See also: [Prometheus/Grafana Docker containers for Raspberry Pi](https://github.com/sighmon/prometheus-grafana-raspberry-pi)
+Related software:
+
+* [Prometheus/Grafana Docker containers for Raspberry Pi](https://github.com/sighmon/prometheus-grafana-raspberry-pi)
+* [Apple HomeKit accessory for the SCD4x CO2 sensor](https://github.com/sighmon/homekit-scd4x)
 
 ## Setup
 
