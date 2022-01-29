@@ -178,20 +178,20 @@ void loop() {
                 Serial.println();
             }
             // Send Prometheus data
-            client.println("# HELP ambient_temperature Ambient temperature");
-            client.println("# TYPE ambient_temperature gauge");
-            client.println((String)"ambient_temperature " + temperature);
-            client.println("# HELP ambient_humidity Ambient humidity");
-            client.println("# TYPE ambient_humidity gauge");
-            client.println((String)"ambient_humidity " + humidity);
-            client.println("# HELP co2 CO2");
-            client.println("# TYPE co2 gauge");
-            client.println((String)"co2 " + co2);
+            client.print("# HELP ambient_temperature Ambient temperature\n");
+            client.print("# TYPE ambient_temperature gauge\n");
+            client.print((String)"ambient_temperature " + temperature + "\n");
+            client.print("# HELP ambient_humidity Ambient humidity\n");
+            client.print("# TYPE ambient_humidity gauge\n");
+            client.print((String)"ambient_humidity " + humidity + "\n");
+            client.print("# HELP co2 CO2\n");
+            client.print("# TYPE co2 gauge\n");
+            client.print((String)"co2 " + co2 + "\n");
             digitalWrite(5, LOW);
             // END Read the SCD4X CO2 sensor
 
             // The HTTP response ends with another blank line:
-            client.println();
+            client.print("\n");
             // break out of the while loop:
             break;
           } else {    // if you got a newline, then clear currentLine:
