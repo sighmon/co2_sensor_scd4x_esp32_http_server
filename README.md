@@ -27,7 +27,7 @@ If you open the Arduino serial monitor you'll see:
 
 ## http response
 
-Once your ESP32 has connected to your SSID, it will respond over port 80 with a [Prometheus](https://prometheus.io) response. e.g.
+Once your ESP32 has connected to your SSID, it will respond over port 80 with a [Prometheus](https://prometheus.io) response. e.g. `curl 192.168.1.100:80/metrics`
 
 ```bash
 # HELP ambient_temperature Ambient temperature
