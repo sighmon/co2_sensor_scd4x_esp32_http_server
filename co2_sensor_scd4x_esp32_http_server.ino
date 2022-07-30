@@ -1,5 +1,5 @@
 /*
- Arduino ESP32 WiFi Web Server for the Adafruit SCD4X CO2 sensor.
+ Arduino ESP32 WiFi Web Server for the Adafruit SCD30 CO2 sensor.
  Responds to http requests with prometheus.io syntax responses.
 
  # HELP ambient_temperature Ambient temperature
@@ -15,6 +15,7 @@
  Based on:
  * ESP32 example code SimpleWiFiServer by Jan Hendrik Berlin
  * Sensirion I2C SCD4X example code exampleUsage Copyright (c) 2021, Sensirion AG
+ * Adafruit SCD30 test Copyright (c) 2020 Bryan Siepert for Adafruit Industries
 
  Written by Simon Loffler on invasion/survival day 26/1/2022
 */
@@ -24,12 +25,9 @@
 // SCD4X sensor init
 
 #include <Arduino.h>
-#include <SensirionI2CScd4x.h>
-#include <Wire.h>
+#include <Adafruit_SCD30.h>
 
-SensirionI2CScd4x scd4x;
-uint16_t error;
-char errorMessage[256];
+Adafruit_SCD30  scd30;
 uint16_t co2;
 float temperature;
 float humidity;
@@ -50,9 +48,7 @@ void printSerialNumber(uint16_t serial0, uint16_t serial1, uint16_t serial2) {
 }
 
 // WiFi init
-
 #include <WiFi.h>
-
 const char* ssid     = SECRET_SSID;
 const char* password = SECRET_PASSWORD;
 
@@ -65,53 +61,22 @@ void setup() {
         delay(100);
     }
 
-    // SCD4X setup
-
-    Wire.begin();
-
-    uint16_t error;
-    char errorMessage[256];
-
-    scd4x.begin(Wire);
-
-    // stop potentially previously started measurement
-    error = scd4x.stopPeriodicMeasurement();
-    if (error) {
-        Serial.print("Error trying to execute stopPeriodicMeasurement(): ");
-        errorToString(error, errorMessage, 256);
-        Serial.println(errorMessage);
+    // SCD30 setup
+    if (!scd30.begin()) {
+      Serial.println("Failed to find SCD30 chip");
+      while (1) { delay(10); }
     }
+    Serial.println("SCD30 Found!");
 
-    uint16_t serial0;
-    uint16_t serial1;
-    uint16_t serial2;
-    error = scd4x.getSerialNumber(serial0, serial1, serial2);
-    if (error) {
-        Serial.print("Error trying to execute getSerialNumber(): ");
-        errorToString(error, errorMessage, 256);
-        Serial.println(errorMessage);
-    } else {
-        printSerialNumber(serial0, serial1, serial2);
-    }
-
-    // Start Measurement
-    error = scd4x.startPeriodicMeasurement();
-    if (error) {
-        Serial.print("Error trying to execute startPeriodicMeasurement(): ");
-        errorToString(error, errorMessage, 256);
-        Serial.println(errorMessage);
-    }
-
-    Serial.println("Waiting for first measurement... (5 sec)");
+    Serial.print("Measurement Interval: ");
+    Serial.print(scd30.getMeasurementInterval());
+    Serial.println(" seconds");
 
     // WiFi setup
-    
     pinMode(5, OUTPUT);      // set the LED pin mode
-
     delay(10);
 
     // We start by connecting to a WiFi network
-
     Serial.println();
     Serial.println();
     Serial.print("Connecting to ");
@@ -130,7 +95,6 @@ void setup() {
     Serial.println(WiFi.localIP());
     
     server.begin();
-
 }
 
 int value = 0;
@@ -159,24 +123,22 @@ void loop() {
             client.println("Content-type:text/html; charset=UTF-8");
             client.println();
 
-            // Read the SCD4X CO2 sensor
+            // Read the SCD30 CO2 sensor
             digitalWrite(5, HIGH);
-            error = scd4x.readMeasurement(co2, temperature, humidity);
-            if (error) {
-                Serial.print("Error trying to execute readMeasurement(): ");
-                errorToString(error, errorMessage, 256);
-                Serial.println(errorMessage);
-            } else if (co2 == 0) {
-                Serial.println("Invalid sample detected, skipping.");
-            } else {
-                Serial.print("Co2:");
-                Serial.println(co2);
-                Serial.print("Temperature:");
-                Serial.println(temperature);
-                Serial.print("Humidity:");
-                Serial.println(humidity);
-                Serial.println();
+            if (scd30.dataReady()){
+              if (!scd30.read()){ Serial.println("Error reading sensor data"); return; }
+              co2 = scd30.CO2;
+              temperature = scd30.temperature;
+              humidity = scd30.relative_humidity;
             }
+            Serial.print("Co2:");
+            Serial.println(co2);
+            Serial.print("Temperature:");
+            Serial.println(temperature);
+            Serial.print("Humidity:");
+            Serial.println(humidity);
+            Serial.println();
+
             // Send Prometheus data
             client.print("# HELP ambient_temperature Ambient temperature\n");
             client.print("# TYPE ambient_temperature gauge\n");
@@ -188,7 +150,7 @@ void loop() {
             client.print("# TYPE co2 gauge\n");
             client.print((String)"co2 " + co2 + "\n");
             digitalWrite(5, LOW);
-            // END Read the SCD4X CO2 sensor
+            // END Read the SCD30 CO2 sensor
 
             // The HTTP response ends with another blank line:
             client.print("\n");

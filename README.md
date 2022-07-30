@@ -1,8 +1,8 @@
-# Adafruit SCD4X CO2 sensor for ESP32
+# Adafruit SCD-30 CO2 sensor for ESP32
 
-An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses.
+An Arduino sketch for the [Adafruit SCD-30 CO2 sensor](https://www.adafruit.com/product/4867) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses.
 
-![The Adafruit SCD-41 CO2 sensor graphed in Grafana](scd-41-co2-temperature-humidity.png)
+![The Adafruit SCD-30 CO2 sensor graphed in Grafana](scd-30-co2.png)
 
 Related software:
 
@@ -20,7 +20,7 @@ Related software:
 **Arduino**:
 
 * Download the latest version of Arduino from https://www.arduino.cc
-* From `Tools > Manage Libraries...` add the library: `Sensirion I2C SCD4x`
+* From `Tools > Manage Libraries...` add the library: `Adafruit SCD30`
 * Connect your ESP32 via USB
 * From `Tools > Board` choose your ESP32 board, port, and speed: `115200`
 * Now try `Upload` to send the code to your ESP32
@@ -30,7 +30,7 @@ Related software:
 If you open the Arduino serial monitor you'll see:
 
 * The WiFi output as it attempts to connect to your WiFi network
-* The http response including the SCD4X CO2 readings
+* The http response including the SCD-30 CO2 readings
 
 ## http response
 
@@ -48,38 +48,16 @@ ambient_humidity 55.85
 co2 627
 ```
 
-My ESP32 Thing with the SCD-41 CO2 sensor running off of two recycled 18650 laptop batteries.
+My ESP32 Thing with the SCD-30 CO2 sensor running off of two recycled 18650 laptop batteries.
 
-![My ESP32 Thing with the SCD-41 CO2 sensor running off of two recycled 18650 laptop batteries](scd4x-esp32-thing.jpg)
+![My ESP32 Thing with the SCD-30 CO2 sensor running off of two recycled 18650 laptop batteries](scd30-esp32-thing.jpg)
 
 ## Thanks
 
-Shoutout to [Core Electronics](https://core-electronics.com.au) for being so fast with their delivery of the [Adafruit SCD-41](https://core-electronics.com.au/adafruit-scd-41-ndir-co2-temperature-and-humidity-sensor-stemma-qt-qwiic.html).
+Shoutout to [Core Electronics](https://core-electronics.com.au) for being so fast with their delivery of the [Adafruit SCD-30](https://core-electronics.com.au/adafruit-scd-30-ndir-co2-temperature-and-humidity-sensor-stemma-qt-qwiic.html).
 
 ## Licenses
 
 * My code: MIT License
 * ESP32 example code `SimpleWiFiServer` by Jan Hendrik Berlin
-* Sensirion I2C SCD4X example code `exampleUsage` license:
-
-Copyright (c) 2021, Sensirion AG
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-* Neither the name of Sensirion AG nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+* Adafruit SCD30 test Copyright (c) 2020 Bryan Siepert for Adafruit Industries: BSD License
