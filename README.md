@@ -1,13 +1,13 @@
 # Adafruit SCD4X CO2 sensor for ESP32
 
-An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses.
+An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) and [Adafruit SCD-30 CO2 sensor](https://github.com/adafruit/Adafruit_SCD30) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses.
 
 ![The Adafruit SCD-41 CO2 sensor graphed in Grafana](scd-41-co2-temperature-humidity.png)
 
 Related software:
 
 * [Prometheus/Grafana Docker containers for Raspberry Pi](https://github.com/sighmon/prometheus-grafana-raspberry-pi)
-* [Apple HomeKit accessory for the SCD4x CO2 sensor](https://github.com/sighmon/homekit-scd4x)
+* [Apple HomeKit accessory for the SCD4x/SCD-30 CO2 sensor](https://github.com/sighmon/homekit-scd4x)
 
 ## Setup
 
@@ -21,16 +21,19 @@ Related software:
 
 * Download the latest version of Arduino from https://www.arduino.cc
 * From `Tools > Manage Libraries...` add the library: `Sensirion I2C SCD4x`
+* If you have an `SCD-30` CO2 sensor, add the library: `Adafruit SCD30`
 * Connect your ESP32 via USB
 * From `Tools > Board` choose your ESP32 board, port, and speed: `115200`
 * Now try `Upload` to send the code to your ESP32
+
+**Note**: If you have an `SCD-30` CO2 sensor, make sure you're on the branch [add/2-scd-30](https://github.com/sighmon/co2_sensor_scd4x_esp32_http_server/tree/add/2-scd-30) before uploading the sketch: `git checkout add/2-scd-30`
 
 ## Serial monitor
 
 If you open the Arduino serial monitor you'll see:
 
 * The WiFi output as it attempts to connect to your WiFi network
-* The http response including the SCD4X CO2 readings
+* The http response including the SCD4X/SCD-30 CO2 readings
 
 ## http response
 
