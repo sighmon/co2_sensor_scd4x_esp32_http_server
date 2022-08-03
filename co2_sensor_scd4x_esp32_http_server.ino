@@ -35,6 +35,7 @@ char errorMessage[256];
 uint16_t co2;
 float temperature;
 float humidity;
+float voltage;
 
 void printUint16Hex(uint16_t value) {
     Serial.print(value < 4096 ? "0" : "");
@@ -161,6 +162,10 @@ void loop() {
             client.println("Content-type:text/html; charset=UTF-8");
             client.println();
 
+            // Read the voltage
+            int sensorValue = analogRead(A2);
+            voltage = analogRead(A2) * (5.0 / 4096.0);
+
             // Read the SCD4X CO2 sensor
             pixels.setPixelColor(0, pixels.Color(0, 255, 0));
             pixels.show();
@@ -178,6 +183,8 @@ void loop() {
                 Serial.println(temperature);
                 Serial.print("Humidity:");
                 Serial.println(humidity);
+                Serial.print("Voltage:");
+                Serial.println(voltage);
                 Serial.println();
             }
             // Send Prometheus data
@@ -190,6 +197,9 @@ void loop() {
             client.print("# HELP co2 CO2\n");
             client.print("# TYPE co2 gauge\n");
             client.print((String)"co2 " + co2 + "\n");
+            client.print("# HELP battery_voltage Battery voltage\n");
+            client.print("# TYPE battery_voltage gauge\n");
+            client.print((String)"battery_voltage " + voltage + "\n");
 
             pixels.clear();
             pixels.show();
