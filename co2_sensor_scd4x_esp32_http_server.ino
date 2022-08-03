@@ -20,6 +20,8 @@
 */
 
 #include "secrets.h"
+#include <Adafruit_NeoPixel.h>
+Adafruit_NeoPixel pixels(1, PIN_NEOPIXEL);
 
 // SCD4X sensor init
 
@@ -53,8 +55,8 @@ void printSerialNumber(uint16_t serial0, uint16_t serial1, uint16_t serial2) {
 
 #include <WiFi.h>
 
-const char* ssid     = SECRET_SSID;
-const char* password = SECRET_PASSWORD;
+char* ssid     = SECRET_SSID;
+char* password = SECRET_PASSWORD;
 
 WiFiServer server(80);
 
@@ -106,7 +108,7 @@ void setup() {
 
     // WiFi setup
     
-    pinMode(5, OUTPUT);      // set the LED pin mode
+    pixels.begin();
 
     delay(10);
 
@@ -160,7 +162,8 @@ void loop() {
             client.println();
 
             // Read the SCD4X CO2 sensor
-            digitalWrite(5, HIGH);
+            pixels.setPixelColor(0, pixels.Color(0, 255, 0));
+            pixels.show();
             error = scd4x.readMeasurement(co2, temperature, humidity);
             if (error) {
                 Serial.print("Error trying to execute readMeasurement(): ");
@@ -187,7 +190,9 @@ void loop() {
             client.print("# HELP co2 CO2\n");
             client.print("# TYPE co2 gauge\n");
             client.print((String)"co2 " + co2 + "\n");
-            digitalWrite(5, LOW);
+
+            pixels.clear();
+            pixels.show();
             // END Read the SCD4X CO2 sensor
 
             // The HTTP response ends with another blank line:

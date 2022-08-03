@@ -1,2 +1,2 @@
-const char* SECRET_SSID = "your ssid";
-const char* SECRET_PASSWORD = "your password";
+char* SECRET_SSID = "your ssid";
+char* SECRET_PASSWORD = "your password";
