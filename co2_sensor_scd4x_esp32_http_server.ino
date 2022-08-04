@@ -52,6 +52,13 @@ void printSerialNumber(uint16_t serial0, uint16_t serial1, uint16_t serial2) {
     Serial.println();
 }
 
+void printToSerial(String message) {
+  // Check for Serial to avoid the ESP32-C3 hanging attempting to Serial.print
+  if (Serial) {
+    Serial.println(message);
+  }
+}
+
 // WiFi init
 
 #include <WiFi.h>
@@ -64,9 +71,7 @@ WiFiServer server(80);
 void setup() {
 
     Serial.begin(115200);
-    while (!Serial) {
-        delay(100);
-    }
+    delay(100);
 
     // SCD4X setup
 
@@ -80,9 +85,9 @@ void setup() {
     // stop potentially previously started measurement
     error = scd4x.stopPeriodicMeasurement();
     if (error) {
-        Serial.print("Error trying to execute stopPeriodicMeasurement(): ");
+        printToSerial("Error trying to execute stopPeriodicMeasurement(): ");
         errorToString(error, errorMessage, 256);
-        Serial.println(errorMessage);
+        printToSerial(errorMessage);
     }
 
     uint16_t serial0;
@@ -90,53 +95,65 @@ void setup() {
     uint16_t serial2;
     error = scd4x.getSerialNumber(serial0, serial1, serial2);
     if (error) {
-        Serial.print("Error trying to execute getSerialNumber(): ");
+        printToSerial("Error trying to execute getSerialNumber(): ");
         errorToString(error, errorMessage, 256);
-        Serial.println(errorMessage);
+        printToSerial(errorMessage);
     } else {
-        printSerialNumber(serial0, serial1, serial2);
+        if (Serial) {
+          printSerialNumber(serial0, serial1, serial2);
+        }
     }
 
     // Start Measurement
     error = scd4x.startPeriodicMeasurement();
     if (error) {
-        Serial.print("Error trying to execute startPeriodicMeasurement(): ");
+        printToSerial("Error trying to execute startPeriodicMeasurement(): ");
         errorToString(error, errorMessage, 256);
-        Serial.println(errorMessage);
+        printToSerial(errorMessage);
     }
 
-    Serial.println("Waiting for first measurement... (5 sec)");
+    printToSerial("Waiting for first measurement... (5 sec)");
 
     // WiFi setup
     
     pixels.begin();
+    pixels.setPixelColor(0, pixels.Color(10, 0, 0));
+    pixels.show();
+    delay(500);
+    pixels.clear();
+    pixels.show();
 
     delay(10);
 
     // We start by connecting to a WiFi network
 
-    Serial.println();
-    Serial.println();
-    Serial.print("Connecting to ");
-    Serial.println(ssid);
+    printToSerial((String)"Connecting to " + ssid);
 
     WiFi.begin(ssid, password);
 
     while (WiFi.status() != WL_CONNECTED) {
+        pixels.setPixelColor(0, pixels.Color(0, 0, 10));
+        pixels.show();
         delay(500);
-        Serial.print(".");
+        pixels.clear();
+        pixels.show();
+        printToSerial(".");
+        delay(500);
     }
 
-    Serial.println("");
-    Serial.println("WiFi connected.");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
+    printToSerial("WiFi connected.");
+    printToSerial("IP address: ");
+    printToSerial((String)WiFi.localIP());
+
+    pixels.setPixelColor(0, pixels.Color(0, 10, 0));
+    pixels.show();
+    delay(500);
+    pixels.clear();
+    pixels.show();
     
     server.begin();
 
 }
-
-int value = 0;
 
 void loop() {
 
@@ -145,12 +162,13 @@ void loop() {
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
-    Serial.println("New Client.");           // print a message out the serial port    
+    printToSerial("New Client.");           // print a message out the serial port
+    printToSerial("");
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
+        // printToSerial("" + c);                    // print it out the serial monitor
         if (c == '\n') {                    // if the byte is a newline character
 
           // if the current line is blank, you got two newline characters in a row.
@@ -164,28 +182,24 @@ void loop() {
 
             // Read the voltage
             int sensorValue = analogRead(A2);
-            voltage = analogRead(A2) * (5.0 / 4096.0);
+            voltage = sensorValue * (5.0 / 4096.0);
 
             // Read the SCD4X CO2 sensor
-            pixels.setPixelColor(0, pixels.Color(0, 255, 0));
+            pixels.setPixelColor(0, pixels.Color(0, 10, 0));
             pixels.show();
             error = scd4x.readMeasurement(co2, temperature, humidity);
             if (error) {
-                Serial.print("Error trying to execute readMeasurement(): ");
+                printToSerial("Error trying to execute readMeasurement(): ");
                 errorToString(error, errorMessage, 256);
-                Serial.println(errorMessage);
+                printToSerial(errorMessage);
             } else if (co2 == 0) {
-                Serial.println("Invalid sample detected, skipping.");
+                printToSerial("Invalid sample detected, skipping.");
             } else {
-                Serial.print("Co2:");
-                Serial.println(co2);
-                Serial.print("Temperature:");
-                Serial.println(temperature);
-                Serial.print("Humidity:");
-                Serial.println(humidity);
-                Serial.print("Voltage:");
-                Serial.println(voltage);
-                Serial.println();
+                printToSerial((String)"Co2: " + co2);
+                printToSerial((String)"Temperature: " + temperature);
+                printToSerial((String)"Humidity: " + humidity);
+                printToSerial((String)"Voltage: " + voltage);
+                printToSerial("");
             }
             // Send Prometheus data
             client.print("# HELP ambient_temperature Ambient temperature\n");
@@ -219,6 +233,6 @@ void loop() {
     }
     // close the connection:
     client.stop();
-    Serial.println("Client Disconnected.");
+    printToSerial("Client Disconnected.");
   }
 }
