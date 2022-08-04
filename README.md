@@ -60,13 +60,16 @@ Once your ESP32 has connected to your SSID, it will respond over port 80 with a 
 ```bash
 # HELP ambient_temperature Ambient temperature
 # TYPE ambient_temperature gauge
-ambient_temperature 29.70
+ambient_temperature 19.95
 # HELP ambient_humidity Ambient humidity
 # TYPE ambient_humidity gauge
-ambient_humidity 55.85
+ambient_humidity 59.20
 # HELP co2 CO2
 # TYPE co2 gauge
-co2 627
+co2 1333
+# HELP battery_voltage Battery voltage
+# TYPE battery_voltage gauge
+battery_voltage 3.15
 ```
 
 My ESP32-C3 with the SCD-41 CO2 sensor running off of an old Nokia BP-6MT battery.
