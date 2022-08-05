@@ -43,7 +43,7 @@ Related software:
 * Turn on Bluetooth on your device
 * The readings should update every 5 seconds
 
-![The Sensirion iOS app](sensirion-ios-app.png)
+<img src="sensirion-ios-app.png" alt="The Sensirion iOS app" width="25%"/>
 
 ## Serial monitor
 
