@@ -11,10 +11,14 @@
  # HELP co2 CO2
  # TYPE co2 gauge
  co2 670
+ # HELP battery_voltage Battery voltage
+ # TYPE battery_voltage gauge
+ battery_voltage 3.15
 
  Based on:
  * ESP32 example code SimpleWiFiServer by Jan Hendrik Berlin
  * Sensirion I2C SCD4X example code exampleUsage Copyright (c) 2021, Sensirion AG
+ * Sensirion Example8_SCD4x_BLE_Gadget_with_RHT
 
  Written by Simon Loffler on invasion/survival day 26/1/2022
 */
@@ -23,8 +27,19 @@
 #include <Adafruit_NeoPixel.h>
 Adafruit_NeoPixel pixels(1, PIN_NEOPIXEL);
 
-// SCD4X sensor init
+// Task scheduler
+#include <TaskScheduler.h>
+void readSensorCallback();
+Task readSensorTask(5000, -1, &readSensorCallback);  // Read sensor every 5 seconds
+Scheduler runner;
 
+// BLE
+#include "DataProvider.h"
+#include "NimBLELibraryWrapper.h"
+NimBLELibraryWrapper lib;
+DataProvider provider(lib, DataType::T_RH_CO2);
+
+// SCD4X sensor init
 #include <Arduino.h>
 #include <SensirionI2CScd4x.h>
 #include <Wire.h>
@@ -36,6 +51,42 @@ uint16_t co2;
 float temperature;
 float humidity;
 float voltage;
+
+// Task callback
+void readSensorCallback() {
+    // Read the voltage
+    int sensorValue = analogRead(A2);
+    voltage = sensorValue * (5.0 / 4096.0);
+
+    // Read the SCD4X CO2 sensor
+    error = scd4x.readMeasurement(co2, temperature, humidity);
+    if (error) {
+        printToSerial("Error trying to execute readMeasurement(): ");
+        errorToString(error, errorMessage, 256);
+        printToSerial(errorMessage);
+    } else if (co2 == 0) {
+        printToSerial("Invalid sample detected, skipping.");
+    } else {
+        printToSerial((String)"Co2: " + co2);
+        printToSerial((String)"Temperature: " + temperature);
+        printToSerial((String)"Humidity: " + humidity);
+        printToSerial((String)"Voltage: " + voltage);
+        printToSerial("");
+    }
+
+    // Report sensor readings via BLE
+    provider.writeValueToCurrentSample(co2, Unit::CO2);
+    provider.writeValueToCurrentSample(temperature, Unit::T);
+    provider.writeValueToCurrentSample(humidity, Unit::RH);
+    provider.commitSample();
+    provider.handleDownload();
+
+    // Pulse blue LED
+    pixels.setPixelColor(0, pixels.Color(0, 0, 10));
+    pixels.show();
+    pixels.clear();
+    pixels.show();
+}
 
 void printUint16Hex(uint16_t value) {
     Serial.print(value < 4096 ? "0" : "");
@@ -60,12 +111,9 @@ void printToSerial(String message) {
 }
 
 // WiFi init
-
 #include <WiFi.h>
-
 char* ssid     = SECRET_SSID;
 char* password = SECRET_PASSWORD;
-
 WiFiServer server(80);
 
 void setup() {
@@ -74,7 +122,6 @@ void setup() {
     delay(100);
 
     // SCD4X setup
-
     Wire.begin();
 
     uint16_t error;
@@ -114,8 +161,16 @@ void setup() {
 
     printToSerial("Waiting for first measurement... (5 sec)");
 
+    // Setup read sensor task
+    readSensorTask.enable();
+    runner.addTask(readSensorTask);
+    runner.enableAll();
+
+    // Setup BLE
+    provider.begin();
+    printToSerial("Sensirion BLE Lib initialized with deviceId: " + provider.getDeviceIdString());
+
     // WiFi setup
-    
     pixels.begin();
     pixels.setPixelColor(0, pixels.Color(10, 0, 0));
     pixels.show();
@@ -126,7 +181,6 @@ void setup() {
     delay(10);
 
     // We start by connecting to a WiFi network
-
     printToSerial((String)"Connecting to " + ssid);
 
     WiFi.begin(ssid, password);
@@ -150,12 +204,12 @@ void setup() {
     delay(500);
     pixels.clear();
     pixels.show();
-    
-    server.begin();
 
+    server.begin();
 }
 
 void loop() {
+  runner.execute();
 
   // WiFi server
   
@@ -180,27 +234,10 @@ void loop() {
             client.println("Content-type:text/html; charset=UTF-8");
             client.println();
 
-            // Read the voltage
-            int sensorValue = analogRead(A2);
-            voltage = sensorValue * (5.0 / 4096.0);
-
-            // Read the SCD4X CO2 sensor
+            // Pulse the LED to show a connection has been made
             pixels.setPixelColor(0, pixels.Color(0, 10, 0));
             pixels.show();
-            error = scd4x.readMeasurement(co2, temperature, humidity);
-            if (error) {
-                printToSerial("Error trying to execute readMeasurement(): ");
-                errorToString(error, errorMessage, 256);
-                printToSerial(errorMessage);
-            } else if (co2 == 0) {
-                printToSerial("Invalid sample detected, skipping.");
-            } else {
-                printToSerial((String)"Co2: " + co2);
-                printToSerial((String)"Temperature: " + temperature);
-                printToSerial((String)"Humidity: " + humidity);
-                printToSerial((String)"Voltage: " + voltage);
-                printToSerial("");
-            }
+
             // Send Prometheus data
             client.print("# HELP ambient_temperature Ambient temperature\n");
             client.print("# TYPE ambient_temperature gauge\n");
@@ -217,7 +254,6 @@ void loop() {
 
             pixels.clear();
             pixels.show();
-            // END Read the SCD4X CO2 sensor
 
             // The HTTP response ends with another blank line:
             client.print("\n");

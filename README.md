@@ -1,6 +1,6 @@
 # Adafruit SCD4X CO2 sensor for ESP32-C3 QT Py
 
-An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) and [Adafruit SCD-30 CO2 sensor](https://github.com/adafruit/Adafruit_SCD30) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses.
+An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) and [Adafruit SCD-30 CO2 sensor](https://github.com/adafruit/Adafruit_SCD30) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses, and sensor readings sent via Bluetooth BLE.
 
 ![The Adafruit SCD-41 CO2 sensor graphed in Grafana](scd-41-co2-temperature-humidity.png)
 
@@ -8,6 +8,7 @@ Related software:
 
 * [Prometheus/Grafana Docker containers for Raspberry Pi](https://github.com/sighmon/prometheus-grafana-raspberry-pi)
 * [Apple HomeKit accessory for the SCD4x/SCD-30 CO2 sensor](https://github.com/sighmon/homekit-scd4x)
+* [Sensirion iOS app](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)
 
 ## Hardware
 
@@ -36,6 +37,12 @@ Related software:
 
 **Note**: If you have an `SCD-30` CO2 sensor, make sure you're on the branch [add/2-scd-30](https://github.com/sighmon/co2_sensor_scd4x_esp32_http_server/tree/add/2-scd-30) before uploading the sketch: `git checkout add/2-scd-30`
 
+**Bluetooth**:
+
+* Install the Sensirion MyAmbience app: [iOS](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)/[Android](https://play.google.com/store/apps/details?id=com.sensirion.myam)
+* Turn on Bluetooth on your device
+* The readings should update every 5 seconds
+
 ## Serial monitor
 
 If you open the Arduino serial monitor you'll see:
@@ -48,10 +55,13 @@ If you open the Arduino serial monitor you'll see:
 While starting up the LED will light up in this sequence
 
 * Red blink - setup is starting
-* Blue blink - trying to connect to WiFi
+* Blue slow blink - trying to connect to WiFi
 * Green blink - connected
 
-While running the LED will briefly blink Green for an http request.
+While running:
+
+* Green pulse for an http request
+* Blue pulse for a BLE reading sent
 
 ## http response
 
