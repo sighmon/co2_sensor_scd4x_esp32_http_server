@@ -43,6 +43,8 @@ Related software:
 * Turn on Bluetooth on your device
 * The readings should update every 5 seconds
 
+![The Sensirion iOS app](sensirion-ios-app.png)
+
 ## Serial monitor
 
 If you open the Arduino serial monitor you'll see:
