@@ -185,26 +185,29 @@ void setup() {
 
     WiFi.begin(ssid, password);
 
-    while (WiFi.status() != WL_CONNECTED) {
-        pixels.setPixelColor(0, pixels.Color(0, 0, 10));
-        pixels.show();
-        delay(500);
-        pixels.clear();
-        pixels.show();
-        printToSerial(".");
-        delay(500);
+    // Wait for a WiFi connection for up to 5 seconds
+    for (int i = 0; i < 5; i++) {
+        if (WiFi.status() != WL_CONNECTED) {
+            pixels.setPixelColor(0, pixels.Color(0, 0, 10));
+            pixels.show();
+            delay(500);
+            pixels.clear();
+            pixels.show();
+            printToSerial(".");
+            delay(500);
+        } else {
+            printToSerial("WiFi connected.");
+            printToSerial("IP address: ");
+            printToSerial((String)WiFi.localIP());
+
+            pixels.setPixelColor(0, pixels.Color(0, 10, 0));
+            pixels.show();
+            delay(500);
+            pixels.clear();
+            pixels.show();
+            break;
+        }
     }
-
-    printToSerial("WiFi connected.");
-    printToSerial("IP address: ");
-    printToSerial((String)WiFi.localIP());
-
-    pixels.setPixelColor(0, pixels.Color(0, 10, 0));
-    pixels.show();
-    delay(500);
-    pixels.clear();
-    pixels.show();
-
     server.begin();
 }
 
