@@ -54,9 +54,10 @@ float voltage;
 
 // Task callback
 void readSensorCallback() {
-    // Read the voltage
+    // Read the voltage (ESP32-C3 plugged into laptop 4.2V reads 3342)
     int sensorValue = analogRead(A2);
-    voltage = sensorValue * (5.0 / 4096.0);
+    printToSerial((String)"Analog read: " + sensorValue);
+    voltage = sensorValue * (4.2 / 3342.0);
 
     // Read the SCD4X CO2 sensor
     error = scd4x.readMeasurement(co2, temperature, humidity);
@@ -180,13 +181,18 @@ void setup() {
 
     delay(10);
 
+    // Set WiFi power
+    // Max: WIFI_POWER_19_5dBm ~150mA
+    // Min: WIFI_POWER_MINUS_1dBm ~120mA
+    // WiFi.setTxPower(WIFI_POWER_2dBm);
+
     // We start by connecting to a WiFi network
     printToSerial((String)"Connecting to " + ssid);
 
     WiFi.begin(ssid, password);
 
-    // Wait for a WiFi connection for up to 5 seconds
-    for (int i = 0; i < 5; i++) {
+    // Wait for a WiFi connection for up to 10 seconds
+    for (int i = 0; i < 10; i++) {
         if (WiFi.status() != WL_CONNECTED) {
             pixels.setPixelColor(0, pixels.Color(0, 0, 10));
             pixels.show();
