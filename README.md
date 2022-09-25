@@ -39,7 +39,15 @@ Related software:
 
 **Note**: If you have an `SCD-30` CO2 sensor, make sure you're on the branch [add/2-scd-30](https://github.com/sighmon/co2_sensor_scd4x_esp32_http_server/tree/add/2-scd-30) before uploading the sketch: `git checkout add/2-scd-30`
 
-**Bluetooth**:
+**iOS app**:
+
+I built an iOS/macOS app so location data can be saved with CO2 reading data.
+
+Project code: [ios-ble-co2-sensor](https://github.com/sighmon/ios-ble-co2-sensor)
+
+<img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-green.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-yellow.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-orange.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-archive-detail.png" width="20%" style="padding: 10px;">
+
+This code also works with the standard Sensirion MyAmbience app:
 
 * Install the Sensirion MyAmbience app: [iOS](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)/[Android](https://play.google.com/store/apps/details?id=com.sensirion.myam)
 * Turn on Bluetooth on your device
