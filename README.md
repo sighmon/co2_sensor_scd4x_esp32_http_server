@@ -23,6 +23,8 @@ Related software:
 * Download the latest version of Arduino from https://www.arduino.cc
 * From `Tools > Manage Libraries...` add the library: `Sensirion I2C SCD4x`
 * If you have an `SCD-30` CO2 sensor, add the library: `Adafruit SCD30`
+* Install the Sensirion BLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/Sensirion/arduino-ble-gadget.git`
+* Install the NimBLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/h2zero/NimBLE-Arduino.git`
 * Connect your ESP32 via USB
 * From `Tools > Board` choose your ESP32 board, port, and speed: `115200`
 * Now try `Upload` to send the code to your ESP32
