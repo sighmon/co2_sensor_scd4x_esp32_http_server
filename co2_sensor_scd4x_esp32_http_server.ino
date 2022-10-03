@@ -21,8 +21,19 @@
 
 #include "secrets.h"
 
-// SCD4X sensor init
+// Task scheduler
+#include <TaskScheduler.h>
+void readSensorCallback();
+Task readSensorTask(5000, -1, &readSensorCallback);  // Read sensor every 5 seconds
+Scheduler runner;
 
+// BLE
+#include "DataProvider.h"
+#include "NimBLELibraryWrapper.h"
+NimBLELibraryWrapper lib;
+DataProvider provider(lib, DataType::T_RH_CO2);
+
+// SCD4X sensor init
 #include <Arduino.h>
 #include <SensirionI2CScd4x.h>
 #include <Wire.h>
@@ -33,6 +44,31 @@ char errorMessage[256];
 uint16_t co2;
 float temperature;
 float humidity;
+
+// Task callback
+void readSensorCallback() {
+    // Read the SCD4X CO2 sensor
+    error = scd4x.readMeasurement(co2, temperature, humidity);
+    if (error) {
+        Serial.print("Error trying to execute readMeasurement(): ");
+        errorToString(error, errorMessage, 256);
+        Serial.print(errorMessage);
+    } else if (co2 == 0) {
+        Serial.print("Invalid sample detected, skipping.");
+    } else {
+        Serial.print((String)"Co2: " + co2);
+        Serial.print((String)"Temperature: " + temperature);
+        Serial.print((String)"Humidity: " + humidity);
+        Serial.print("");
+    }
+
+    // Report sensor readings via BLE
+    provider.writeValueToCurrentSample(co2, Unit::CO2);
+    provider.writeValueToCurrentSample(temperature, Unit::T);
+    provider.writeValueToCurrentSample(humidity, Unit::RH);
+    provider.commitSample();
+    provider.handleDownload();
+}
 
 void printUint16Hex(uint16_t value) {
     Serial.print(value < 4096 ? "0" : "");
@@ -144,6 +180,7 @@ void loop() {
   if (client) {                             // if you get a client,
     Serial.println("New Client.");           // print a message out the serial port    
     String currentLine = "";                // make a String to hold incoming data from the client
+    digitalWrite(5, HIGH);
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
@@ -159,24 +196,6 @@ void loop() {
             client.println("Content-type:text/html; charset=UTF-8");
             client.println();
 
-            // Read the SCD4X CO2 sensor
-            digitalWrite(5, HIGH);
-            error = scd4x.readMeasurement(co2, temperature, humidity);
-            if (error) {
-                Serial.print("Error trying to execute readMeasurement(): ");
-                errorToString(error, errorMessage, 256);
-                Serial.println(errorMessage);
-            } else if (co2 == 0) {
-                Serial.println("Invalid sample detected, skipping.");
-            } else {
-                Serial.print("Co2:");
-                Serial.println(co2);
-                Serial.print("Temperature:");
-                Serial.println(temperature);
-                Serial.print("Humidity:");
-                Serial.println(humidity);
-                Serial.println();
-            }
             // Send Prometheus data
             client.print("# HELP ambient_temperature Ambient temperature\n");
             client.print("# TYPE ambient_temperature gauge\n");
@@ -188,7 +207,6 @@ void loop() {
             client.print("# TYPE co2 gauge\n");
             client.print((String)"co2 " + co2 + "\n");
             digitalWrite(5, LOW);
-            // END Read the SCD4X CO2 sensor
 
             // The HTTP response ends with another blank line:
             client.print("\n");
