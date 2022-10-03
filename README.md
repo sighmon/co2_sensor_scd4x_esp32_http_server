@@ -21,9 +21,25 @@ Related software:
 
 * Download the latest version of Arduino from https://www.arduino.cc
 * From `Tools > Manage Libraries...` add the library: `Adafruit SCD30`
+* Install the Sensirion BLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/Sensirion/arduino-ble-gadget.git`
+* Install the NimBLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/h2zero/NimBLE-Arduino.git`
 * Connect your ESP32 via USB
 * From `Tools > Board` choose your ESP32 board, port, and speed: `115200`
 * Now try `Upload` to send the code to your ESP32
+
+**iOS/macOS Bluetooth app**:
+
+I built an iOS/macOS app so location data can be saved with CO2 reading data.
+
+Project code: [ios-ble-co2-sensor](https://github.com/sighmon/ios-ble-co2-sensor)
+
+<img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-green.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-yellow.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-orange.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-archive-detail.png" width="20%" style="padding: 10px;">
+
+This code also works with the standard Sensirion MyAmbience app:
+
+* Install the Sensirion MyAmbience app: [iOS](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)/[Android](https://play.google.com/store/apps/details?id=com.sensirion.myam)
+* Turn on Bluetooth on your device
+* The readings should update every 5 seconds
 
 ## Serial monitor
 

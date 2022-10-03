@@ -22,8 +22,19 @@
 
 #include "secrets.h"
 
-// SCD4X sensor init
+// Task scheduler
+#include <TaskScheduler.h>
+void readSensorCallback();
+Task readSensorTask(5000, -1, &readSensorCallback);  // Read sensor every 5 seconds
+Scheduler runner;
 
+// BLE
+#include "DataProvider.h"
+#include "NimBLELibraryWrapper.h"
+NimBLELibraryWrapper lib;
+DataProvider provider(lib, DataType::T_RH_CO2);
+
+// SCD30 sensor init
 #include <Arduino.h>
 #include <Adafruit_SCD30.h>
 
@@ -32,19 +43,29 @@ uint16_t co2;
 float temperature;
 float humidity;
 
-void printUint16Hex(uint16_t value) {
-    Serial.print(value < 4096 ? "0" : "");
-    Serial.print(value < 256 ? "0" : "");
-    Serial.print(value < 16 ? "0" : "");
-    Serial.print(value, HEX);
-}
-
-void printSerialNumber(uint16_t serial0, uint16_t serial1, uint16_t serial2) {
-    Serial.print("Serial: 0x");
-    printUint16Hex(serial0);
-    printUint16Hex(serial1);
-    printUint16Hex(serial2);
+// Task callback
+void readSensorCallback() {
+    // Read the SCD30 CO2 sensor
+    if (scd30.dataReady()){
+      if (!scd30.read()){ Serial.println("Error reading sensor data"); return; }
+      co2 = scd30.CO2;
+      temperature = scd30.temperature;
+      humidity = scd30.relative_humidity;
+    }
+    Serial.print("Co2:");
+    Serial.println(co2);
+    Serial.print("Temperature:");
+    Serial.println(temperature);
+    Serial.print("Humidity:");
+    Serial.println(humidity);
     Serial.println();
+
+    // Report sensor readings via BLE
+    provider.writeValueToCurrentSample(co2, Unit::CO2);
+    provider.writeValueToCurrentSample(temperature, Unit::T);
+    provider.writeValueToCurrentSample(humidity, Unit::RH);
+    provider.commitSample();
+    provider.handleDownload();
 }
 
 // WiFi init
@@ -108,6 +129,7 @@ void loop() {
   if (client) {                             // if you get a client,
     Serial.println("New Client.");           // print a message out the serial port    
     String currentLine = "";                // make a String to hold incoming data from the client
+    digitalWrite(5, HIGH);
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
@@ -122,22 +144,6 @@ void loop() {
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type:text/html; charset=UTF-8");
             client.println();
-
-            // Read the SCD30 CO2 sensor
-            digitalWrite(5, HIGH);
-            if (scd30.dataReady()){
-              if (!scd30.read()){ Serial.println("Error reading sensor data"); return; }
-              co2 = scd30.CO2;
-              temperature = scd30.temperature;
-              humidity = scd30.relative_humidity;
-            }
-            Serial.print("Co2:");
-            Serial.println(co2);
-            Serial.print("Temperature:");
-            Serial.println(temperature);
-            Serial.print("Humidity:");
-            Serial.println(humidity);
-            Serial.println();
 
             // Send Prometheus data
             client.print("# HELP ambient_temperature Ambient temperature\n");
