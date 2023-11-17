@@ -144,6 +144,7 @@ void setup() {
     Serial.print("Connecting to ");
     Serial.println(ssid);
 
+    IPAddress ip(IPADDRESS[0], IPADDRESS[1], IPADDRESS[2], IPADDRESS[3]);
     WiFi.begin(ssid, password);
 
     while (WiFi.status() != WL_CONNECTED) {
@@ -153,6 +154,8 @@ void setup() {
 
     Serial.println("");
     Serial.println("WiFi connected.");
+    WiFi.config(ip, IPAddress(0,0,0,0), IPAddress(0,0,0,0), IPAddress(0,0,0,0));
+
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
