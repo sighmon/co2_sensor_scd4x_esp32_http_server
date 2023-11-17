@@ -24,7 +24,7 @@
 // Task scheduler
 #include <TaskScheduler.h>
 void readSensorCallback();
-Task readSensorTask(5000, -1, &readSensorCallback);  // Read sensor every 5 seconds
+Task readSensorTask(5000, TASK_FOREVER, &readSensorCallback);  // Read sensor every 5 seconds
 Scheduler runner;
 
 // BLE
@@ -137,7 +137,10 @@ void setup() {
         errorToString(error, errorMessage, 256);
         Serial.println(errorMessage);
     }
-
+    
+    runner.init();
+    runner.addTask(readSensorTask);
+    readSensorTask.enable();
     Serial.println("Waiting for first measurement... (5 sec)");
 
     // WiFi setup
@@ -164,17 +167,18 @@ void setup() {
     Serial.println("WiFi connected.");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
-    
-    server.begin();
 
+    server.begin();
 }
 
 int value = 0;
 
 void loop() {
 
+  // Execute runner
+   runner.execute();
+
   // WiFi server
-  
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
