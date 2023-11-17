@@ -27,12 +27,6 @@ void readSensorCallback();
 Task readSensorTask(5000, TASK_FOREVER, &readSensorCallback);  // Read sensor every 5 seconds
 Scheduler runner;
 
-// BLE
-#include "DataProvider.h"
-#include "NimBLELibraryWrapper.h"
-NimBLELibraryWrapper lib;
-DataProvider provider(lib, DataType::T_RH_CO2);
-
 // SCD4X sensor init
 #include <Arduino.h>
 #include <SensirionI2CScd4x.h>
@@ -62,12 +56,6 @@ void readSensorCallback() {
         Serial.print("");
     }
 
-    // Report sensor readings via BLE
-    provider.writeValueToCurrentSample(co2, Unit::CO2);
-    provider.writeValueToCurrentSample(temperature, Unit::T);
-    provider.writeValueToCurrentSample(humidity, Unit::RH);
-    provider.commitSample();
-    provider.handleDownload();
 }
 
 void printUint16Hex(uint16_t value) {
