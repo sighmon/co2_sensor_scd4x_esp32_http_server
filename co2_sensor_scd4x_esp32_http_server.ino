@@ -50,9 +50,9 @@ void readSensorCallback() {
     } else if (co2 == 0) {
         Serial.print("Invalid sample detected, skipping.");
     } else {
-        Serial.print((String)"Co2: " + co2);
-        Serial.print((String)"Temperature: " + temperature);
-        Serial.print((String)"Humidity: " + humidity);
+        Serial.println((String)"Co2: " + co2);
+        Serial.println((String)"Temperature: " + temperature);
+        Serial.println((String)"Humidity: " + humidity);
         Serial.print("");
     }
 
