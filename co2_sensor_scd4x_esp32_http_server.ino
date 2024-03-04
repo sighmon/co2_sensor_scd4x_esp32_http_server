@@ -32,9 +32,12 @@ Task readSensorTask(5000, -1, &readSensorCallback);  // Read sensor every 5 seco
 Scheduler runner;
 
 // BLE
+// SCD4X
 #include "DataProvider.h"
 #include "NimBLELibraryWrapper.h"
 #include "Sensirion_Gadget_BLE.h"
+// SCD30
+// #include "Sensirion_GadgetBle_Lib.h"
 NimBLELibraryWrapper lib;
 // SCD4X
 // DataProvider provider(lib, DataType::T_RH_CO2);
@@ -53,7 +56,10 @@ SensirionI2cScd30 sensor;
 
 uint16_t error;
 char errorMessage[256];
-uint16_t co2;
+// SCD4X
+// uint16_t co2;
+// SCD30
+float co2;
 float temperature;
 float humidity;
 float voltage;
@@ -95,7 +101,7 @@ void readSensorCallback() {
         // Provide the sensor values for Tools -> Serial Monitor or Serial
         // Plotter
         Serial.print("CO2[ppm]:");
-        Serial.print(co2Concentration);
+        Serial.print(co2);
         Serial.print("\t");
         Serial.print("Temperature[℃]:");
         Serial.print(temperature);
@@ -105,9 +111,14 @@ void readSensorCallback() {
     }
 
     // Report sensor readings via BLE
-    provider.writeValueToCurrentSample(co2, Unit::CO2);
-    provider.writeValueToCurrentSample(temperature, Unit::T);
-    provider.writeValueToCurrentSample(humidity, Unit::RH);
+    // SCD4X
+    // provider.writeValueToCurrentSample(co2, Unit::CO2);
+    // provider.writeValueToCurrentSample(temperature, Unit::T);
+    // provider.writeValueToCurrentSample(humidity, Unit::RH);
+    // SCD30
+    provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+    provider.writeValueToCurrentSample(temperature, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+    provider.writeValueToCurrentSample(humidity, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
     provider.commitSample();
     provider.handleDownload();
 
@@ -172,22 +183,22 @@ void setup() {
     sensor.softReset();
     sensor.activateAutoCalibration(1);
 
-    uint16_t serial0;
-    uint16_t serial1;
-    uint16_t serial2;
-    error = sensor.getSerialNumber(serial0, serial1, serial2);
-    if (error) {
-        printToSerial("Error trying to execute getSerialNumber(): ");
-        errorToString(error, errorMessage, 256);
-        printToSerial(errorMessage);
-    } else {
-        if (Serial) {
-          printSerialNumber(serial0, serial1, serial2);
-        }
-    }
+    // uint16_t serial0;
+    // uint16_t serial1;
+    // uint16_t serial2;
+    // error = sensor.getSerialNumber(serial0, serial1, serial2);
+    // if (error) {
+    //     printToSerial("Error trying to execute getSerialNumber(): ");
+    //     errorToString(error, errorMessage, 256);
+    //     printToSerial(errorMessage);
+    // } else {
+    //     if (Serial) {
+    //       printSerialNumber(serial0, serial1, serial2);
+    //     }
+    // }
 
     // Start Measurement
-    error = sensor.startPeriodicMeasurement();
+    error = sensor.startPeriodicMeasurement(0);
     if (error) {
         printToSerial("Error trying to execute startPeriodicMeasurement(): ");
         errorToString(error, errorMessage, 256);
