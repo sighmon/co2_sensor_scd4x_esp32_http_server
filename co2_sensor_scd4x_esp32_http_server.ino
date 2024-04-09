@@ -1,5 +1,5 @@
 /*
- Arduino ESP32 WiFi Web Server for the Adafruit SCD4X CO2 sensor.
+ Arduino ESP32 WiFi Web Server for the Adafruit SCD4X and SCD30 CO2 sensors.
  Responds to http requests with prometheus.io syntax responses.
 
  # HELP ambient_temperature Ambient temperature
@@ -17,8 +17,9 @@
 
  Based on:
  * ESP32 example code SimpleWiFiServer by Jan Hendrik Berlin
- * Sensirion I2C SCD4X example code exampleUsage Copyright (c) 2021, Sensirion AG
+ * Sensirion I2C SCD4X/SCD30 example code exampleUsage Copyright (c) 2021, Sensirion AG
  * Sensirion Example8_SCD4x_BLE_Gadget_with_RHT
+ * Sensirion Example2_SCD30_BLE_Gadget
 
  Written by Simon Loffler on invasion/survival day 26/1/2022
 */

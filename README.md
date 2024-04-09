@@ -1,4 +1,4 @@
-# Adafruit SCD4X CO2 sensor for ESP32-C3 QT Py
+# Adafruit SCD4X/SCD30 CO2 sensor for ESP32
 
 An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) and [Adafruit SCD-30 CO2 sensor](https://github.com/adafruit/Adafruit_SCD30) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses, and sensor readings sent via Bluetooth BLE.
 
@@ -37,7 +37,12 @@ Related software:
 * Connect your ESP32 via USB
 * Now try `Upload` to send the code to your ESP32
 
-**Note**: If you have an `SCD-30` CO2 sensor, make sure you're on the branch [add/2-scd-30](https://github.com/sighmon/co2_sensor_scd4x_esp32_http_server/tree/add/2-scd-30) before uploading the sketch: `git checkout add/2-scd-30`
+**Note**: As of 9th April 2024 this was the dependency versions that compiled on a Sparkfun ESP32 Thing:
+
+* `git clone git@github.com:Sensirion/arduino-ble-gadget.git` into `~/Arduino/libraries` and then `git checkout tags/1.2.0` and add `#include <string>` to `ByteArray.h`
+* `git clone git@github.com:Sensirion/arduino-upt-core.git Sensirion_UPT_Core` into `~/Arduino/libraries` and then `git checkout 919ef8b`
+* `git clone git@github.com:h2zero/NimBLE-Arduino.git` into `~/Arduino/libraries` and then `git checkout release/1.4`
+* Install the `ESP32` boards library at `v2.0.11`
 
 **iOS app**:
 
