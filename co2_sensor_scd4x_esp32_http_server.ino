@@ -26,6 +26,13 @@
 
 #include "secrets.h"
 
+// Uncomment which sensor you're using
+#define USESCD30
+// #define USESCD4X
+
+// If on an ESP32-C3 set this
+// int LED_BUILTIN = 13;
+
 // Task scheduler
 #include <TaskScheduler.h>
 void readSensorCallback();
@@ -33,34 +40,45 @@ Task readSensorTask(5000, -1, &readSensorCallback);  // Read sensor every 5 seco
 Scheduler runner;
 
 // BLE
-// SCD4X
 #include "DataProvider.h"
 #include "NimBLELibraryWrapper.h"
 #include "Sensirion_Gadget_BLE.h"
-// SCD30
-// #include "Sensirion_GadgetBle_Lib.h"
-NimBLELibraryWrapper lib;
-// SCD4X
-// DataProvider provider(lib, DataType::T_RH_CO2);
-// SCD30
-DataProvider provider(lib, DataType::T_RH_CO2_ALT);
 
-// SCD4X sensor init
-// #include <SensirionI2CScd4x.h>
-// SensirionI2CScd4x sensor;
-// SCD30 sensor init
-#include <SensirionI2cScd30.h>
-SensirionI2cScd30 sensor;
+#ifdef USESCD30
+  // SCD30
+  NimBLELibraryWrapper lib;
+  DataProvider provider(lib, DataType::T_RH_CO2_ALT);
+#endif
+#ifdef USESCD4X
+  // SCD4X
+  DataProvider provider(lib, DataType::T_RH_CO2);
+#endif
+
+#ifdef USESCD30
+  // SCD30 sensor init
+  #include <SensirionI2cScd30.h>
+  SensirionI2cScd30 sensor;
+#endif
+#ifdef USESCD4X
+  // SCD4X sensor init
+  #include <SensirionI2CScd4x.h>
+  SensirionI2CScd4x sensor;
+#endif
 
 #include <Arduino.h>
 #include <Wire.h>
 
 uint16_t error;
 char errorMessage[256];
-// SCD4X
-// uint16_t co2;
-// SCD30
-float co2;
+
+#ifdef USESCD30
+  // SCD30
+  float co2;
+#endif
+#ifdef USESCD4X
+  // SCD4X
+  uint16_t co2;
+#endif
 float temperature;
 float humidity;
 float voltage;
@@ -68,58 +86,65 @@ float voltage;
 // Task callback
 void readSensorCallback() {
     // Read the voltage (ESP32-C3 plugged into laptop 4.2V reads 3342)
-    int sensorValue = analogRead(A2);
-    printToSerial((String)"Analog read: " + sensorValue);
-    voltage = sensorValue * (4.2 / 3342.0);
+    // int sensorValue = analogRead(A2);
+    // printToSerial((String)"Analog read: " + sensorValue);
+    // voltage = sensorValue * (4.2 / 3342.0);
 
-    // Read the SCD4X CO2 sensor
-    // error = sensor.readMeasurement(co2, temperature, humidity);
-    // if (error) {
-    //     printToSerial("Error trying to execute readMeasurement(): ");
-    //     errorToString(error, errorMessage, 256);
-    //     printToSerial(errorMessage);
-    // } else if (co2 == 0) {
-    //     printToSerial("Invalid sample detected, skipping.");
-    // } else {
-    //     printToSerial((String)"Co2: " + co2);
-    //     printToSerial((String)"Temperature: " + temperature);
-    //     printToSerial((String)"Humidity: " + humidity);
-    //     printToSerial((String)"Voltage: " + voltage);
-    //     printToSerial("");
-    // }
-    // Read the SCD30 CO2 sensor
-    uint16_t data_ready = 0;
-    sensor.getDataReady(data_ready);
-    if (bool(data_ready)) {
-        error = sensor.readMeasurementData(co2, temperature, humidity);
-        if (error != NO_ERROR) {
-            Serial.print("Error trying to execute readMeasurementData(): ");
-            errorToString(error, errorMessage, sizeof errorMessage);
-            Serial.println(errorMessage);
-            return;
-        }
-
-        // Provide the sensor values for Tools -> Serial Monitor or Serial
-        // Plotter
-        Serial.print("CO2[ppm]:");
-        Serial.print(co2);
-        Serial.print("\t");
-        Serial.print("Temperature[℃]:");
-        Serial.print(temperature);
-        Serial.print("\t");
-        Serial.print("Humidity[%]:");
-        Serial.println(humidity);
-    }
+#ifdef USESCD30
+      // Read the SCD30 CO2 sensor
+      uint16_t data_ready = 0;
+      sensor.getDataReady(data_ready);
+      if (bool(data_ready)) {
+          error = sensor.readMeasurementData(co2, temperature, humidity);
+          if (error != NO_ERROR) {
+              Serial.print("Error trying to execute readMeasurementData(): ");
+              errorToString(error, errorMessage, sizeof errorMessage);
+              Serial.println(errorMessage);
+              return;
+          }
+          // Provide the sensor values for Tools -> Serial Monitor or Serial
+          // Plotter
+          Serial.print("CO2[ppm]:");
+          Serial.print(co2);
+          Serial.print("\t");
+          Serial.print("Temperature[℃]:");
+          Serial.print(temperature);
+          Serial.print("\t");
+          Serial.print("Humidity[%]:");
+          Serial.println(humidity);
+      }
+#endif
+#ifdef USESCD4X
+      // Read the SCD4X CO2 sensor
+      error = sensor.readMeasurement(co2, temperature, humidity);
+      if (error) {
+          printToSerial("Error trying to execute readMeasurement(): ");
+          errorToString(error, errorMessage, 256);
+          printToSerial(errorMessage);
+      } else if (co2 == 0) {
+          printToSerial("Invalid sample detected, skipping.");
+      } else {
+          printToSerial((String)"Co2: " + co2);
+          printToSerial((String)"Temperature: " + temperature);
+          printToSerial((String)"Humidity: " + humidity);
+          printToSerial((String)"Voltage: " + voltage);
+          printToSerial("");
+      }
+#endif
 
     // Report sensor readings via BLE
-    // SCD4X
-    // provider.writeValueToCurrentSample(co2, Unit::CO2);
-    // provider.writeValueToCurrentSample(temperature, Unit::T);
-    // provider.writeValueToCurrentSample(humidity, Unit::RH);
-    // SCD30
-    provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
-    provider.writeValueToCurrentSample(temperature, SignalType::TEMPERATURE_DEGREES_CELSIUS);
-    provider.writeValueToCurrentSample(humidity, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+#ifdef USESCD30
+      // SCD30
+      provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+      provider.writeValueToCurrentSample(temperature, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+      provider.writeValueToCurrentSample(humidity, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
+#endif
+#ifdef USESCD4X
+      // SCD4X
+      provider.writeValueToCurrentSample(co2, Unit::CO2);
+      provider.writeValueToCurrentSample(temperature, Unit::T);
+      provider.writeValueToCurrentSample(humidity, Unit::RH);
+#endif
     provider.commitSample();
     provider.handleDownload();
 
@@ -163,47 +188,53 @@ void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
 
-    // SCD4X setup
+    // Sensor setup
     Wire.begin();
 
     uint16_t error;
     char errorMessage[256];
 
-    // SCD4X
-    // sensor.begin(Wire);
-    // SCD30
-    sensor.begin(Wire, SCD30_I2C_ADDR_61);
+#ifdef USESCD30
+      // SCD30
+      sensor.begin(Wire, SCD30_I2C_ADDR_61);
+#endif
+#ifdef USESCD4X
+      // SCD4X
+      sensor.begin(Wire);
+#endif
 
     // stop potentially previously started measurement
     error = sensor.stopPeriodicMeasurement();
     if (error) {
-        printToSerial("Error trying to execute stopPeriodicMeasurement(): ");
-        errorToString(error, errorMessage, 256);
-        printToSerial(errorMessage);
+      printToSerial("Error trying to execute stopPeriodicMeasurement(): ");
+      errorToString(error, errorMessage, 256);
+      printToSerial(errorMessage);
     }
     sensor.softReset();
     sensor.activateAutoCalibration(1);
 
-    // uint16_t serial0;
-    // uint16_t serial1;
-    // uint16_t serial2;
-    // error = sensor.getSerialNumber(serial0, serial1, serial2);
-    // if (error) {
-    //     printToSerial("Error trying to execute getSerialNumber(): ");
-    //     errorToString(error, errorMessage, 256);
-    //     printToSerial(errorMessage);
-    // } else {
-    //     if (Serial) {
-    //       printSerialNumber(serial0, serial1, serial2);
-    //     }
-    // }
+#ifdef USESCD4X
+      uint16_t serial0;
+      uint16_t serial1;
+      uint16_t serial2;
+      error = sensor.getSerialNumber(serial0, serial1, serial2);
+      if (error) {
+        printToSerial("Error trying to execute getSerialNumber(): ");
+        errorToString(error, errorMessage, 256);
+        printToSerial(errorMessage);
+      } else {
+        if (Serial) {
+          printSerialNumber(serial0, serial1, serial2);
+        }
+      }
+#endif
 
     // Start Measurement
     error = sensor.startPeriodicMeasurement(0);
     if (error) {
-        printToSerial("Error trying to execute startPeriodicMeasurement(): ");
-        errorToString(error, errorMessage, 256);
-        printToSerial(errorMessage);
+      printToSerial("Error trying to execute startPeriodicMeasurement(): ");
+      errorToString(error, errorMessage, 256);
+      printToSerial(errorMessage);
     }
 
     printToSerial("Waiting for first measurement... (5 sec)");
@@ -236,22 +267,22 @@ void setup() {
 
     // Wait for a WiFi connection for up to 10 seconds
     for (int i = 0; i < 10; i++) {
-        if (WiFi.status() != WL_CONNECTED) {
-            digitalWrite(LED_BUILTIN, HIGH);
-            delay(500);
-            digitalWrite(LED_BUILTIN, LOW);
-            printToSerial(".");
-            delay(500);
-        } else {
-            printToSerial("WiFi connected.");
-            printToSerial("IP address: ");
-            printToSerial((String)WiFi.localIP());
+      if (WiFi.status() != WL_CONNECTED) {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(500);
+        digitalWrite(LED_BUILTIN, LOW);
+        printToSerial(".");
+        delay(500);
+      } else {
+        printToSerial("WiFi connected.");
+        printToSerial("IP address: ");
+        printToSerial((String)WiFi.localIP());
 
-            digitalWrite(LED_BUILTIN, HIGH);
-            delay(1000);
-            digitalWrite(LED_BUILTIN, LOW);
-            break;
-        }
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(1000);
+        digitalWrite(LED_BUILTIN, LOW);
+        break;
+      }
     }
     server.begin();
 }
@@ -260,7 +291,6 @@ void loop() {
   runner.execute();
 
   // WiFi server
-  
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
