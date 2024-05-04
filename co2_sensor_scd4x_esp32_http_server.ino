@@ -43,10 +43,10 @@ Scheduler runner;
 #include "DataProvider.h"
 #include "NimBLELibraryWrapper.h"
 #include "Sensirion_Gadget_BLE.h"
+NimBLELibraryWrapper lib;
 
 #ifdef USESCD30
   // SCD30
-  NimBLELibraryWrapper lib;
   DataProvider provider(lib, DataType::T_RH_CO2_ALT);
 #endif
 #ifdef USESCD4X
@@ -91,60 +91,51 @@ void readSensorCallback() {
     // voltage = sensorValue * (4.2 / 3342.0);
 
 #ifdef USESCD30
-      // Read the SCD30 CO2 sensor
-      uint16_t data_ready = 0;
-      sensor.getDataReady(data_ready);
-      if (bool(data_ready)) {
-          error = sensor.readMeasurementData(co2, temperature, humidity);
-          if (error != NO_ERROR) {
-              Serial.print("Error trying to execute readMeasurementData(): ");
-              errorToString(error, errorMessage, sizeof errorMessage);
-              Serial.println(errorMessage);
-              return;
-          }
-          // Provide the sensor values for Tools -> Serial Monitor or Serial
-          // Plotter
-          Serial.print("CO2[ppm]:");
-          Serial.print(co2);
-          Serial.print("\t");
-          Serial.print("Temperature[℃]:");
-          Serial.print(temperature);
-          Serial.print("\t");
-          Serial.print("Humidity[%]:");
-          Serial.println(humidity);
-      }
+    // Read the SCD30 CO2 sensor
+    uint16_t data_ready = 0;
+    sensor.getDataReady(data_ready);
+    if (bool(data_ready)) {
+        error = sensor.readMeasurementData(co2, temperature, humidity);
+        if (error != NO_ERROR) {
+            Serial.print("Error trying to execute readMeasurementData(): ");
+            errorToString(error, errorMessage, sizeof errorMessage);
+            Serial.println(errorMessage);
+            return;
+        }
+        // Provide the sensor values for Tools -> Serial Monitor or Serial
+        // Plotter
+        Serial.print("CO2[ppm]:");
+        Serial.print(co2);
+        Serial.print("\t");
+        Serial.print("Temperature[℃]:");
+        Serial.print(temperature);
+        Serial.print("\t");
+        Serial.print("Humidity[%]:");
+        Serial.println(humidity);
+    }
 #endif
 #ifdef USESCD4X
-      // Read the SCD4X CO2 sensor
-      error = sensor.readMeasurement(co2, temperature, humidity);
-      if (error) {
-          printToSerial("Error trying to execute readMeasurement(): ");
-          errorToString(error, errorMessage, 256);
-          printToSerial(errorMessage);
-      } else if (co2 == 0) {
-          printToSerial("Invalid sample detected, skipping.");
-      } else {
-          printToSerial((String)"Co2: " + co2);
-          printToSerial((String)"Temperature: " + temperature);
-          printToSerial((String)"Humidity: " + humidity);
-          printToSerial((String)"Voltage: " + voltage);
-          printToSerial("");
-      }
+    // Read the SCD4X CO2 sensor
+    error = sensor.readMeasurement(co2, temperature, humidity);
+    if (error) {
+        printToSerial("Error trying to execute readMeasurement(): ");
+        errorToString(error, errorMessage, 256);
+        printToSerial(errorMessage);
+    } else if (co2 == 0) {
+        printToSerial("Invalid sample detected, skipping.");
+    } else {
+        printToSerial((String)"Co2: " + co2);
+        printToSerial((String)"Temperature: " + temperature);
+        printToSerial((String)"Humidity: " + humidity);
+        printToSerial((String)"Voltage: " + voltage);
+        printToSerial("");
+    }
 #endif
 
     // Report sensor readings via BLE
-#ifdef USESCD30
-      // SCD30
-      provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
-      provider.writeValueToCurrentSample(temperature, SignalType::TEMPERATURE_DEGREES_CELSIUS);
-      provider.writeValueToCurrentSample(humidity, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
-#endif
-#ifdef USESCD4X
-      // SCD4X
-      provider.writeValueToCurrentSample(co2, Unit::CO2);
-      provider.writeValueToCurrentSample(temperature, Unit::T);
-      provider.writeValueToCurrentSample(humidity, Unit::RH);
-#endif
+    provider.writeValueToCurrentSample(co2, SignalType::CO2_PARTS_PER_MILLION);
+    provider.writeValueToCurrentSample(temperature, SignalType::TEMPERATURE_DEGREES_CELSIUS);
+    provider.writeValueToCurrentSample(humidity, SignalType::RELATIVE_HUMIDITY_PERCENTAGE);
     provider.commitSample();
     provider.handleDownload();
 
@@ -195,12 +186,12 @@ void setup() {
     char errorMessage[256];
 
 #ifdef USESCD30
-      // SCD30
-      sensor.begin(Wire, SCD30_I2C_ADDR_61);
+    // SCD30
+    sensor.begin(Wire, SCD30_I2C_ADDR_61);
 #endif
 #ifdef USESCD4X
-      // SCD4X
-      sensor.begin(Wire);
+    // SCD4X
+    sensor.begin(Wire);
 #endif
 
     // stop potentially previously started measurement
@@ -210,27 +201,38 @@ void setup() {
       errorToString(error, errorMessage, 256);
       printToSerial(errorMessage);
     }
+#ifdef USESCD30
+    // SCD30
     sensor.softReset();
     sensor.activateAutoCalibration(1);
+#endif
 
 #ifdef USESCD4X
-      uint16_t serial0;
-      uint16_t serial1;
-      uint16_t serial2;
-      error = sensor.getSerialNumber(serial0, serial1, serial2);
-      if (error) {
-        printToSerial("Error trying to execute getSerialNumber(): ");
-        errorToString(error, errorMessage, 256);
-        printToSerial(errorMessage);
-      } else {
-        if (Serial) {
-          printSerialNumber(serial0, serial1, serial2);
-        }
+    uint16_t serial0;
+    uint16_t serial1;
+    uint16_t serial2;
+    error = sensor.getSerialNumber(serial0, serial1, serial2);
+    if (error) {
+      printToSerial("Error trying to execute getSerialNumber(): ");
+      errorToString(error, errorMessage, 256);
+      printToSerial(errorMessage);
+    } else {
+      if (Serial) {
+        printSerialNumber(serial0, serial1, serial2);
       }
+    }
 #endif
 
     // Start Measurement
+#ifdef USESCD30
+    // SCD30
     error = sensor.startPeriodicMeasurement(0);
+#endif
+#ifdef USESCD4X
+    // SCD4X
+    error = sensor.startPeriodicMeasurement();
+#endif
+
     if (error) {
       printToSerial("Error trying to execute startPeriodicMeasurement(): ");
       errorToString(error, errorMessage, 256);

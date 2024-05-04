@@ -31,6 +31,7 @@ Related software:
 * Download the latest version of Arduino from https://www.arduino.cc
 * From `Tools > Manage Libraries...` add the library: `Sensirion I2C SCD4x`
 * If you have an `SCD-30` CO2 sensor, add the library: `Adafruit SCD30`
+* Uncomment either `#define USESCD30` or `#define USESCD4X`
 * Install the Sensirion BLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/Sensirion/arduino-ble-gadget.git`
 * Install the NimBLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/h2zero/NimBLE-Arduino.git`
 * Install the Adafruit boards [following their instructions](https://learn.adafruit.com/adafruit-qt-py-esp32-c3-wifi-dev-board/arduino-ide-setup)
