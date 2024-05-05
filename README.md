@@ -8,6 +8,7 @@ Related software:
 
 * [Prometheus/Grafana Docker containers for Raspberry Pi](https://github.com/sighmon/prometheus-grafana-raspberry-pi)
 * [Apple HomeKit accessory for the SCD4x/SCD-30 CO2 sensor](https://github.com/sighmon/homekit-scd4x)
+* [iOS/macOS BLE CO2 sensor](https://github.com/sighmon/ios-ble-co2-sensor)
 * [Sensirion iOS app](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)
 
 ## Hardware
@@ -60,6 +61,20 @@ This code also works with the standard Sensirion MyAmbience app:
 * The readings should update every 5 seconds
 
 <img src="sensirion-ios-app.png" alt="The Sensirion iOS app" width="25%"/>
+
+**iOS/macOS Bluetooth app**:
+
+I built an iOS/macOS app so location data can be saved with CO2 reading data.
+
+Project code: [ios-ble-co2-sensor](https://github.com/sighmon/ios-ble-co2-sensor)
+
+<img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-green.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-yellow.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-orange.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-archive-detail.png" width="20%" style="padding: 10px;">
+
+This code also works with the standard Sensirion MyAmbience app:
+
+* Install the Sensirion MyAmbience app: [iOS](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)/[Android](https://play.google.com/store/apps/details?id=com.sensirion.myam)
+* Turn on Bluetooth on your device
+* The readings should update every 5 seconds
 
 ## Serial monitor
 
