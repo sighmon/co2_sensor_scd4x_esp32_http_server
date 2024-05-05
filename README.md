@@ -46,7 +46,7 @@ Related software:
 * `git clone git@github.com:h2zero/NimBLE-Arduino.git` into `~/Arduino/libraries` and then `git checkout release/1.4`
 * Install the `ESP32` boards library at `v2.0.11`
 
-**iOS app**:
+**iOS/macOS Bluetooth app**:
 
 I built an iOS/macOS app so location data can be saved with CO2 reading data.
 
@@ -61,20 +61,6 @@ This code also works with the standard Sensirion MyAmbience app:
 * The readings should update every 5 seconds
 
 <img src="sensirion-ios-app.png" alt="The Sensirion iOS app" width="25%"/>
-
-**iOS/macOS Bluetooth app**:
-
-I built an iOS/macOS app so location data can be saved with CO2 reading data.
-
-Project code: [ios-ble-co2-sensor](https://github.com/sighmon/ios-ble-co2-sensor)
-
-<img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-green.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-yellow.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-orange.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-archive-detail.png" width="20%" style="padding: 10px;">
-
-This code also works with the standard Sensirion MyAmbience app:
-
-* Install the Sensirion MyAmbience app: [iOS](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)/[Android](https://play.google.com/store/apps/details?id=com.sensirion.myam)
-* Turn on Bluetooth on your device
-* The readings should update every 5 seconds
 
 ## Serial monitor
 

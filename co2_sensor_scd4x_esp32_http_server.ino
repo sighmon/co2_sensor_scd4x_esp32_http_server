@@ -31,7 +31,7 @@
 // #define USESCD4X
 
 // If on an ESP32-C3 set this
-// int LED_BUILTIN = 13;
+int LED_BUILTIN = 13;
 
 // Task scheduler
 #include <TaskScheduler.h>
