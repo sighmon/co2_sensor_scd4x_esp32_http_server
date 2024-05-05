@@ -31,7 +31,7 @@
 // #define USESCD4X
 
 // If on an ESP32-C3 set this
-int LED_BUILTIN = 13;
+// int LED_BUILTIN = 13;
 
 // Task scheduler
 #include <TaskScheduler.h>
@@ -65,13 +65,6 @@ NimBLELibraryWrapper lib;
   SensirionI2CScd4x sensor;
 #endif
 
-// BLE
-#include "DataProvider.h"
-#include "NimBLELibraryWrapper.h"
-NimBLELibraryWrapper lib;
-DataProvider provider(lib, DataType::T_RH_CO2);
-
-// SCD4X sensor init
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -149,31 +142,6 @@ void readSensorCallback() {
     // Pulse blue LED
     digitalWrite(LED_BUILTIN, HIGH);
     digitalWrite(LED_BUILTIN, LOW);
-}
-
-// Task callback
-void readSensorCallback() {
-    // Read the SCD4X CO2 sensor
-    error = scd4x.readMeasurement(co2, temperature, humidity);
-    if (error) {
-        Serial.print("Error trying to execute readMeasurement(): ");
-        errorToString(error, errorMessage, 256);
-        Serial.print(errorMessage);
-    } else if (co2 == 0) {
-        Serial.print("Invalid sample detected, skipping.");
-    } else {
-        Serial.print((String)"Co2: " + co2);
-        Serial.print((String)"Temperature: " + temperature);
-        Serial.print((String)"Humidity: " + humidity);
-        Serial.print("");
-    }
-
-    // Report sensor readings via BLE
-    provider.writeValueToCurrentSample(co2, Unit::CO2);
-    provider.writeValueToCurrentSample(temperature, Unit::T);
-    provider.writeValueToCurrentSample(humidity, Unit::RH);
-    provider.commitSample();
-    provider.handleDownload();
 }
 
 void printUint16Hex(uint16_t value) {
@@ -331,7 +299,6 @@ void loop() {
     printToSerial("New Client.");           // print a message out the serial port
     printToSerial("");
     String currentLine = "";                // make a String to hold incoming data from the client
-    digitalWrite(5, HIGH);
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
