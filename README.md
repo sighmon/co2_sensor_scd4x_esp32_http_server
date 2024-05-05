@@ -1,6 +1,6 @@
-# Adafruit SCD4X CO2 sensor for ESP32
+# Adafruit SCD4X/SCD30 CO2 sensor for ESP32
 
-An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) and [Adafruit SCD-30 CO2 sensor](https://github.com/adafruit/Adafruit_SCD30) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses.
+An Arduino sketch for the [Adafruit SCD4X CO2 sensor](https://github.com/adafruit/Adafruit_CircuitPython_SCD4X) and [Adafruit SCD-30 CO2 sensor](https://github.com/adafruit/Adafruit_SCD30) running on an ESP32 with an http server returning [Prometheus](https://prometheus.io) compatible responses, and sensor readings sent via Bluetooth BLE.
 
 ![The Adafruit SCD-41 CO2 sensor graphed in Grafana](scd-41-co2-temperature-humidity.png)
 
@@ -9,6 +9,15 @@ Related software:
 * [Prometheus/Grafana Docker containers for Raspberry Pi](https://github.com/sighmon/prometheus-grafana-raspberry-pi)
 * [Apple HomeKit accessory for the SCD4x/SCD-30 CO2 sensor](https://github.com/sighmon/homekit-scd4x)
 * [iOS/macOS BLE CO2 sensor](https://github.com/sighmon/ios-ble-co2-sensor)
+* [Sensirion iOS app](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)
+
+## Hardware
+
+* [Adafruit SCD-41 CO2 sensor](https://www.adafruit.com/product/5190)
+* [Adafruit ESP32-C3 QT Py dev board](https://www.adafruit.com/product/5405)
+* [Adafruit battery charger for QT Py](https://www.adafruit.com/product/5397)
+* [Adafruit Qwiic cable](https://www.adafruit.com/product/4399)
+* Nokia BP-6MT 3.7V battery (any 3.7 - 4.2V battery will work)
 
 ## Setup
 
@@ -16,20 +25,42 @@ Related software:
 
 * Copy the secrets file: `cp secrets.tmpl.h secrets.h`
 * Fill in your SSID and password in `secrets.h`
-* **Note**: my [ESP32 Thing](https://www.sparkfun.com/products/13907) would only connect to a 2.4 GHz network
+* **Note**: the ESP32-C3 only connects to a 2.4 GHz network
 
 **Arduino**:
 
 * Download the latest version of Arduino from https://www.arduino.cc
 * From `Tools > Manage Libraries...` add the library: `Sensirion I2C SCD4x`
 * If you have an `SCD-30` CO2 sensor, add the library: `Adafruit SCD30`
+* Uncomment either `#define USESCD30` or `#define USESCD4X`
 * Install the Sensirion BLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/Sensirion/arduino-ble-gadget.git`
 * Install the NimBLE library: `cd ~/Documents/Arduino/library` and then `git clone https://github.com/h2zero/NimBLE-Arduino.git`
+* Install the Adafruit boards [following their instructions](https://learn.adafruit.com/adafruit-qt-py-esp32-c3-wifi-dev-board/arduino-ide-setup)
 * Connect your ESP32 via USB
-* From `Tools > Board` choose your ESP32 board, port, and speed: `115200`
 * Now try `Upload` to send the code to your ESP32
 
-**Note**: If you have an `SCD-30` CO2 sensor, make sure you're on the branch [add/2-scd-30](https://github.com/sighmon/co2_sensor_scd4x_esp32_http_server/tree/add/2-scd-30) before uploading the sketch: `git checkout add/2-scd-30`
+**Note**: As of 9th April 2024 this was the dependency versions that compiled on a Sparkfun ESP32 Thing:
+
+* `git clone git@github.com:Sensirion/arduino-ble-gadget.git` into `~/Arduino/libraries` and then `git checkout tags/1.2.0` and add `#include <string>` to `ByteArray.h`
+* `git clone git@github.com:Sensirion/arduino-upt-core.git Sensirion_UPT_Core` into `~/Arduino/libraries` and then `git checkout 919ef8b`
+* `git clone git@github.com:h2zero/NimBLE-Arduino.git` into `~/Arduino/libraries` and then `git checkout release/1.4`
+* Install the `ESP32` boards library at `v2.0.11`
+
+**iOS app**:
+
+I built an iOS/macOS app so location data can be saved with CO2 reading data.
+
+Project code: [ios-ble-co2-sensor](https://github.com/sighmon/ios-ble-co2-sensor)
+
+<img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-green.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-yellow.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-orange.png" width="20%" style="padding: 10px;"><img src="https://github.com/sighmon/ios-ble-co2-sensor/raw/main/co2-sensor-ios-archive-detail.png" width="20%" style="padding: 10px;">
+
+This code also works with the standard Sensirion MyAmbience app:
+
+* Install the Sensirion MyAmbience app: [iOS](https://apps.apple.com/ch/app/sensirion-myambience-co2/id1529131572)/[Android](https://play.google.com/store/apps/details?id=com.sensirion.myam)
+* Turn on Bluetooth on your device
+* The readings should update every 5 seconds
+
+<img src="sensirion-ios-app.png" alt="The Sensirion iOS app" width="25%"/>
 
 **iOS/macOS Bluetooth app**:
 
@@ -50,7 +81,20 @@ This code also works with the standard Sensirion MyAmbience app:
 If you open the Arduino serial monitor you'll see:
 
 * The WiFi output as it attempts to connect to your WiFi network
-* The http response including the SCD4X/SCD-30 CO2 readings
+* The SCD4X/SCD-30 CO2 readings
+
+## LEDs
+
+While starting up the LED will light up in this sequence
+
+* Red blink - setup is starting
+* Blue slow blink - trying to connect to WiFi
+* Green blink - connected
+
+While running:
+
+* Green pulse for an http request
+* Blue pulse for a BLE reading sent
 
 ## http response
 
@@ -59,18 +103,21 @@ Once your ESP32 has connected to your SSID, it will respond over port 80 with a 
 ```bash
 # HELP ambient_temperature Ambient temperature
 # TYPE ambient_temperature gauge
-ambient_temperature 29.70
+ambient_temperature 19.95
 # HELP ambient_humidity Ambient humidity
 # TYPE ambient_humidity gauge
-ambient_humidity 55.85
+ambient_humidity 59.20
 # HELP co2 CO2
 # TYPE co2 gauge
-co2 627
+co2 1333
+# HELP battery_voltage Battery voltage
+# TYPE battery_voltage gauge
+battery_voltage 3.15
 ```
 
-My ESP32 Thing with the SCD-41 CO2 sensor running off of two recycled 18650 laptop batteries.
+My ESP32-C3 with the SCD-41 CO2 sensor running off of an old Nokia BP-6MT battery.
 
-![My ESP32 Thing with the SCD-41 CO2 sensor running off of two recycled 18650 laptop batteries](scd4x-esp32-thing.jpg)
+![My ESP32-C3 with the SCD-41 CO2 sensor running off of an old Nokia BP-6MT battery](scd4x-esp32-c3.jpg)
 
 ## Thanks
 
